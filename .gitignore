@@ -12,3 +12,5 @@ node_modules/
 .msg.txt
 
 .msg*.txt
+
+.m.txt
