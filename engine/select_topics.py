@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-"""小红书调研筛选：内容四维（全部 >=7）+ 数据门槛（赞 / 收藏比）。"""
+"""小红书调研筛选：配置驱动的闸门 + 数据门槛；无合格样本时降级 3-5 条。"""
 import argparse
 import json
 import os
+import re
 
-DIMS = ["information_density", "copyability", "structure_clarity", "differentiation"]
-MIN_DIM = 7
+DEFAULT_DIMS = ["information_density", "copyability", "structure_clarity", "differentiation"]
+DEFAULT_MIN = 7
 
 
 def g(row, q, k, d=0):
@@ -24,10 +25,58 @@ def brief(r):
     }
 
 
+def compare(val, expr):
+    m = re.match(r"^(>=|<=|==|!=|>|<)\s*(-?\d+(?:\.\d+)?)$", str(expr).strip())
+    if not m:
+        return False
+    op, num = m.group(1), float(m.group(2))
+    try:
+        v = float(val)
+    except (TypeError, ValueError):
+        v = 0.0
+    return {
+        ">=": v >= num, "<=": v <= num, "==": v == num,
+        "!=": v != num, ">": v > num, "<": v < num,
+    }[op]
+
+
+def gate_dims(cfg):
+    req = (cfg.get("gate") or {}).get("require") or {}
+    return list(req.keys()) or DEFAULT_DIMS
+
+
+def failed_dims(row, cfg):
+    gate = cfg.get("gate") or {}
+    failed = []
+    for q, cond in (gate.get("require") or {}).items():
+        for dim, expr in cond.items():
+            if not compare(g(row, q, dim, 0), expr):
+                failed.append(q)
+                break
+    for q, cond in (gate.get("forbid") or {}).items():
+        for dim, expected in cond.items():
+            if g(row, q, dim, "") == expected:
+                failed.append(q)
+                break
+    for q, limit in (gate.get("max_score") or {}).items():
+        if g(row, q, "score", 9) > limit:
+            failed.append(q)
+    if not gate:
+        for d in DEFAULT_DIMS:
+            if g(row, d, "score", 0) < DEFAULT_MIN:
+                failed.append(d)
+    return failed
+
+
+def avg_score(scores):
+    return round(sum(scores.values()) / len(scores), 2) if scores else 0.0
+
+
 def filter_rank(rows, cfg):
     metrics = cfg.get("metrics", {})
     min_likes = float(metrics.get("min_likes", 500))
     min_ratio = float(metrics.get("min_collect_ratio", 0.15))
+    dims = gate_dims(cfg)
 
     shortlist, rejected, pending = [], [], []
 
@@ -45,7 +94,6 @@ def filter_rank(rows, cfg):
             continue
 
         likes = float(likes)
-
         if likes < min_likes:
             item = brief(r)
             item["reason"] = "gate_metric"
@@ -60,7 +108,6 @@ def filter_rank(rows, cfg):
             continue
 
         collects = float(collects)
-
         ratio = collects / likes if likes else 0.0
         if ratio < min_ratio:
             item = brief(r)
@@ -72,8 +119,8 @@ def filter_rank(rows, cfg):
             rejected.append(item)
             continue
 
-        scores = {d: g(r, d, "score", 0) for d in DIMS}
-        failed = [d for d in DIMS if scores[d] < MIN_DIM]
+        scores = {d: g(r, d, "score", 0) for d in dims}
+        failed = failed_dims(r, cfg)
         if failed:
             item = brief(r)
             item["reason"] = "gate_require"
@@ -83,12 +130,26 @@ def filter_rank(rows, cfg):
             continue
 
         item = brief(r)
-        item["score"] = round(sum(scores.values()) / len(DIMS), 2)
+        item["score"] = avg_score(scores)
         item["scores"] = scores
         shortlist.append(item)
 
     shortlist.sort(key=lambda x: (-x["score"], -(x.get("likes") or 0)))
-    return shortlist, rejected, pending
+
+    fallback = []
+    fb = cfg.get("fallback", {})
+    if fb.get("enabled", True) and not shortlist:
+        fb_max = int(fb.get("max_items", 5))
+        cands = [r for r in rejected if r.get("scores")]
+        cands.sort(key=lambda r: -avg_score(r["scores"]))
+        for r in cands[: max(0, min(fb_max, len(cands)))]:
+            item = dict(r)
+            item["fallback"] = True
+            item["avg_score"] = avg_score(r["scores"])
+            item["reason"] = "fallback_low_score"
+            fallback.append(item)
+
+    return shortlist, rejected, pending, fallback
 
 
 def main():
@@ -102,18 +163,22 @@ def main():
     src = os.path.join(a.out_dir, "judged.jsonl")
     rows = [json.loads(l) for l in open(src, encoding="utf-8") if l.strip()]
 
-    shortlist, rejected, pending = filter_rank(rows, cfg)
+    shortlist, rejected, pending, fallback = filter_rank(rows, cfg)
     top = shortlist[: a.top]
 
     os.makedirs(a.out_dir, exist_ok=True)
-    json.dump(top, open(os.path.join(a.out_dir, "shortlist.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1)
-    json.dump(rejected, open(os.path.join(a.out_dir, "shortlist_rejected.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1)
-    json.dump(pending, open(os.path.join(a.out_dir, "pending_review.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1)
+    for name, data in (
+        ("shortlist.json", top),
+        ("shortlist_rejected.json", rejected),
+        ("pending_review.json", pending),
+        ("shortlist_fallback.json", fallback),
+    ):
+        json.dump(data, open(os.path.join(a.out_dir, name), "w", encoding="utf-8"),
+                  ensure_ascii=False, indent=1)
 
-    print(f"入 Top {len(top)} / 淘汰 {len(rejected)} / 待核 {len(pending)}")
+    print(f"入 Top {len(top)} / 淘汰 {len(rejected)} / 待核 {len(pending)} / 降级 {len(fallback)}")
+    if fallback and not top:
+        print("本轮无合格样本，已降级推荐 " + str(len(fallback)) + " 条，报告中必须说明降级原因")
 
 
 if __name__ == "__main__":

@@ -66,6 +66,16 @@ python engine/select_topics.py --config profiles/public-xhs.json --out-dir runs/
 
 **结论**：采集交给脚本，模型只负责 intake、判断和写报告。agent 采集仅作应急兜底，不进入推荐路径。
 
+## 无合格样本时：降级入选
+
+如果没有任何一条通过四维闸门，不要输出空报告。按 `fallback` 配置（默认 `min_items: 3`、`max_items: 5`）从落选者里按四维均分取前几条，写进 `shortlist_fallback.json`，并标记 `fallback: true`、`reason: fallback_low_score`、`failed`（哪几维没过）。
+
+报告中必须单独说明：这是降级推荐，不是合格样本，并写清每条差在哪一维。把降级当正常入选写，等于放弃契约。
+
+## 维度是正交的
+
+`copyability`（可复制）和 `emotional_resonance`（情绪共鸣）是两把不同的尺子：一条内容可以既可复制又有共鸣，也可以只有其一。两个维度都打分，由 `gate.require` 决定这次用哪几个，不要互相替代。
+
 ## 产出契约
 
 ```

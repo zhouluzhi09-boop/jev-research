@@ -90,6 +90,22 @@
         "Unique angle that defines a new format.",
         "Category-defining originality."
       ]
+    },
+    "emotional_resonance": {
+      "type": "score",
+      "instructions": "How strongly does this post trigger an emotional response (recognition, anger, tenderness, aspiration) in the target reader?",
+      "criteria": [
+        "No emotional pull.",
+        "Mild interest only.",
+        "Slight recognition.",
+        "Some emotional hook.",
+        "Noticeable reaction for a narrow audience.",
+        "Clear emotional reaction for most readers.",
+        "Strong recognition or strong feeling.",
+        "Highly emotional, likely to be shared.",
+        "Visceral reaction, hard to scroll past.",
+        "Defines a shared feeling for the whole audience."
+      ]
     }
   },
   "gate": {
@@ -117,5 +133,14 @@
       "structure_clarity": 0.25,
       "differentiation": 0.25
     }
+  },
+  "fallback": {
+    "enabled": true,
+    "min_items": 3,
+    "max_items": 5
+  },
+  "notes": {
+    "orthogonality": "copyability 与 emotional_resonance 正交：一条内容可以既可复制又有共鸣，也可以只有其一。二者都打分，由 gate 决定用哪个。",
+    "fallback": "无合格样本时，按四维均分从 gate_require 落选者里取 3-5 条，标记 fallback=true，报告中必须写明降级原因。"
   }
 }
