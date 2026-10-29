@@ -74,7 +74,7 @@ python engine/select_topics.py --config profiles/public-xhs.json --out-dir runs/
 
 ## 维度是正交的
 
-`copyability`（可复制）和 `emotional_resonance`（情绪共鸣）是两把不同的尺子：一条内容可以既可复制又有共鸣，也可以只有其一。两个维度都打分，由 `gate.require` 决定这次用哪几个，不要互相替代。
+`copyability`（可复制）和 `emotional_resonance`（情绪共鸣）是两把不同的尺子：一条内容可以既可复制又有共鸣，也可以只有其一。两个维度都打分、都参与加权排序，不要互相替代。默认只把前四维写进 `gate.require`；情绪共鸣不作硬门槛，否则会把「干货但冷」的内容全部挡掉。做娱乐向时，再按 profile 单独把它加成门槛。
 
 ## 产出契约
 

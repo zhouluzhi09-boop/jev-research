@@ -9,7 +9,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, "engine"))
 
-from select_topics import filter_rank, score_dims  # noqa: E402
+from select_topics import filter_rank, gate_require, score_dims  # noqa: E402
+
+GATE_DIMS = ("information_density", "copyability", "structure_clarity", "differentiation")
 
 
 def load():
@@ -26,19 +28,30 @@ class ContractTest(unittest.TestCase):
         self.shortlist, self.rejected, self.pending, self.fallback = filter_rank(self.rows, self.cfg)
 
     def test_counts(self):
-        self.assertEqual(len(self.shortlist), 1)
+        self.assertEqual(len(self.shortlist), 2)
         self.assertEqual(len(self.pending), 1)
-        self.assertEqual(len(self.rejected), 8)
+        self.assertEqual(len(self.rejected), 7)
         self.assertEqual(len(self.fallback), 0)
 
-    def test_score_dims_include_resonance(self):
+    def test_resonance_is_scored_but_not_gated(self):
         self.assertIn("emotional_resonance", score_dims(self.cfg))
+        self.assertNotIn("emotional_resonance", gate_require(self.cfg))
 
-    def test_only_all_dims_pass(self):
-        self.assertEqual(self.shortlist[0]["id"], "n1")
-        for item in self.shortlist:
-            for d in score_dims(self.cfg):
-                self.assertGreaterEqual(item["scores"][d], 5, d)
+    def test_low_resonance_still_passes_if_other_dims_ok(self):
+        ids = [x["id"] for x in self.shortlist]
+        self.assertIn("n10", ids)
+        n10 = [x for x in self.shortlist if x["id"] == "n10"][0]
+        self.assertEqual(n10["scores"]["emotional_resonance"], 4)
+        for d in GATE_DIMS:
+            self.assertGreaterEqual(n10["scores"][d], 7)
+
+    def test_gate_requires_every_dim(self):
+        ids = {r["id"]: r for r in self.rejected}
+        for rid, dim in (("n2", "information_density"), ("n6", "structure_clarity"),
+                         ("n7", "copyability"), ("n8", "differentiation"),
+                         ("n9", "structure_clarity")):
+            self.assertEqual(ids[rid]["reason"], "gate_require")
+            self.assertIn(dim, ids[rid]["failed"])
 
     def test_missing_collects_goes_pending_not_dropped(self):
         self.assertEqual(self.pending[0]["id"], "n3")
@@ -49,14 +62,6 @@ class ContractTest(unittest.TestCase):
         self.assertEqual(ids["n4"]["reason"], "gate_metric")
         self.assertEqual(ids["n5"]["reason"], "gate_metric")
 
-    def test_content_gate_requires_every_dim(self):
-        ids = {r["id"]: r for r in self.rejected}
-        for rid, dim in (("n2", "information_density"), ("n6", "structure_clarity"),
-                         ("n7", "copyability"), ("n8", "differentiation"),
-                         ("n10", "emotional_resonance")):
-            self.assertEqual(ids[rid]["reason"], "gate_require")
-            self.assertIn(dim, ids[rid]["failed"])
-
     def test_average_score_cannot_replace_threshold(self):
         avg = sum(v["score"] for v in self.rows[1]["jev"].values()) / 5
         self.assertGreaterEqual(avg, 7)
@@ -64,6 +69,11 @@ class ContractTest(unittest.TestCase):
             self.rejected[[r["id"] for r in self.rejected].index("n2")]["reason"],
             "gate_require",
         )
+
+    def test_resonance_affects_ranking(self):
+        ranking = [x["id"] for x in self.shortlist]
+        self.assertEqual(ranking[0], "n1")
+        self.assertEqual(ranking[1], "n10")
 
     def test_fallback_only_when_nothing_passes(self):
         cfg = copy.deepcopy(self.cfg)
