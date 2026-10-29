@@ -8,3 +8,5 @@ shortlist_watch.json
 .venv/
 node_modules/
 .DS_Store
+
+.msg.txt
