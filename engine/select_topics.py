@@ -38,14 +38,13 @@ def filter_rank(rows, cfg):
         likes = r.get("likes")
         collects = r.get("collects")
 
-        if likes in (None, "") or collects in (None, ""):
+        if likes in (None, ""):
             item = brief(r)
             item["reason"] = "unverifiable"
             pending.append(item)
             continue
 
         likes = float(likes)
-        collects = float(collects)
 
         if likes < min_likes:
             item = brief(r)
@@ -53,6 +52,14 @@ def filter_rank(rows, cfg):
             item["actual"] = {"likes": likes, "min_likes": min_likes}
             rejected.append(item)
             continue
+
+        if collects in (None, ""):
+            item = brief(r)
+            item["reason"] = "unverifiable"
+            pending.append(item)
+            continue
+
+        collects = float(collects)
 
         ratio = collects / likes if likes else 0.0
         if ratio < min_ratio:
