@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""小红书调研筛选：配置驱动的闸门 + 数据门槛；无合格样本时降级 3-5 条。"""
+"""小红书调研筛选：配置驱动闸门 + 数据门槛 + 加权评分；无合格样本时降级 3-5 条。"""
 import argparse
 import json
 import os
@@ -7,6 +7,7 @@ import re
 
 DEFAULT_DIMS = ["information_density", "copyability", "structure_clarity", "differentiation"]
 DEFAULT_MIN = 7
+SPECIAL_KEYS = {"lightness"}
 
 
 def g(row, q, k, d=0):
@@ -40,9 +41,26 @@ def compare(val, expr):
     }[op]
 
 
-def gate_dims(cfg):
-    req = (cfg.get("gate") or {}).get("require") or {}
-    return list(req.keys()) or DEFAULT_DIMS
+def gate_require(cfg):
+    return (cfg.get("gate") or {}).get("require") or {}
+
+
+def weights(cfg):
+    w = (cfg.get("ranking") or {}).get("weights") or {}
+    return {k: float(v) for k, v in w.items() if k not in SPECIAL_KEYS}
+
+
+def score_dims(cfg):
+    dims = set(gate_require(cfg)) | set(weights(cfg))
+    return sorted(dims) if dims else list(DEFAULT_DIMS)
+
+
+def score_of(scores, w):
+    if not scores:
+        return 0.0
+    ws = {k: float(w.get(k, 1.0)) for k in scores}
+    total = sum(ws.values()) or 1.0
+    return round(sum(scores[k] * ws[k] for k in scores) / total, 2)
 
 
 def failed_dims(row, cfg):
@@ -68,15 +86,12 @@ def failed_dims(row, cfg):
     return failed
 
 
-def avg_score(scores):
-    return round(sum(scores.values()) / len(scores), 2) if scores else 0.0
-
-
 def filter_rank(rows, cfg):
     metrics = cfg.get("metrics", {})
     min_likes = float(metrics.get("min_likes", 500))
     min_ratio = float(metrics.get("min_collect_ratio", 0.15))
-    dims = gate_dims(cfg)
+    dims = score_dims(cfg)
+    w = weights(cfg)
 
     shortlist, rejected, pending = [], [], []
 
@@ -130,7 +145,7 @@ def filter_rank(rows, cfg):
             continue
 
         item = brief(r)
-        item["score"] = avg_score(scores)
+        item["score"] = score_of(scores, w)
         item["scores"] = scores
         shortlist.append(item)
 
@@ -141,11 +156,11 @@ def filter_rank(rows, cfg):
     if fb.get("enabled", True) and not shortlist:
         fb_max = int(fb.get("max_items", 5))
         cands = [r for r in rejected if r.get("scores")]
-        cands.sort(key=lambda r: -avg_score(r["scores"]))
+        cands.sort(key=lambda r: -score_of(r["scores"], w))
         for r in cands[: max(0, min(fb_max, len(cands)))]:
             item = dict(r)
             item["fallback"] = True
-            item["avg_score"] = avg_score(r["scores"])
+            item["avg_score"] = score_of(r["scores"], w)
             item["reason"] = "fallback_low_score"
             fallback.append(item)
 

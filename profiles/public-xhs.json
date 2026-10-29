@@ -121,6 +121,9 @@
       },
       "differentiation": {
         "score": ">=7"
+      },
+      "emotional_resonance": {
+        "score": ">=5"
       }
     },
     "forbid": {},
@@ -128,10 +131,11 @@
   },
   "ranking": {
     "weights": {
-      "information_density": 0.25,
-      "copyability": 0.25,
-      "structure_clarity": 0.25,
-      "differentiation": 0.25
+      "information_density": 0.2,
+      "copyability": 0.2,
+      "structure_clarity": 0.2,
+      "differentiation": 0.2,
+      "emotional_resonance": 0.2
     }
   },
   "fallback": {
@@ -141,6 +145,7 @@
   },
   "notes": {
     "orthogonality": "copyability 与 emotional_resonance 正交：一条内容可以既可复制又有共鸣，也可以只有其一。二者都打分，由 gate 决定用哪个。",
-    "fallback": "无合格样本时，按四维均分从 gate_require 落选者里取 3-5 条，标记 fallback=true，报告中必须写明降级原因。"
+    "fallback": "无合格样本时，按四维均分从 gate_require 落选者里取 3-5 条，标记 fallback=true，报告中必须写明降级原因。",
+    "resonance": "情绪共鸣是正式维度：参与加权排序，并设 5 分下限（不拔到 7，避免干掉干货型内容）。"
   }
 }
