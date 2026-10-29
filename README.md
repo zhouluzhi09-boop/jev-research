@@ -56,6 +56,7 @@ python engine/select_topics.py --config profiles/public-xhs.json --out-dir runs/
 
 - 依赖页面结构，小红书改版会导致采集失效。
 - 收藏数需要打开详情页读取，速度较慢，且部分页面可能读不到。
+- 详情页必须从搜索结果点击进入；直接访问笔记 URL 会返回 404（缺少 xsec_token）。
 - 不支持自动登录，首次需人工扫码。
 
 ## 免责声明

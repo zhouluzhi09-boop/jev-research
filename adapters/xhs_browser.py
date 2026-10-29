@@ -29,18 +29,17 @@ GRAB = """() => Array.from(document.querySelectorAll('section.note-item')).map(e
   };
 })"""
 
-DETAIL = """() => {
-  const pick = (sels) => {
-    for (const s of sels) {
-      const e = document.querySelector(s);
-      if (e) { const t = (e.textContent || '').trim(); if (t) return t; }
-    }
-    return null;
+DETAIL = r"""() => {
+  const pick = (s) => {
+    const e = document.querySelector(s);
+    return e ? (e.textContent || '').trim() : null;
   };
+  const bar = document.querySelector('.engage-bar');
+  const nums = bar ? ((bar.innerText || '').match(/\d+(?:\.\d+)?(?:\u4e07|w)?/g) || []) : [];
   return {
-    collects: pick(['.collect-wrapper .count', '.engage-bar .collect .count']),
-    comments: pick(['.comment-wrapper .count', '.engage-bar .comment .count']),
-    published_at: pick(['.date', '.bottom-container .date'])
+    likes: pick('.like-wrapper .count'),
+    collects: pick('.collect-wrapper .count'),
+    engage_numbers: nums.slice(0, 5)
   };
 }"""
 
@@ -92,27 +91,35 @@ def main():
             cards.append(c)
 
         rows = []
+        search_url = page.url
         for i, c in enumerate(cards[: a.limit], 1):
             href = c["href"]
-            url = "https://www.xiaohongshu.com" + href if href.startswith("/") else href
             detail = {}
             try:
-                page.goto(url, wait_until="domcontentloaded")
-                page.wait_for_timeout(1500)
+                page.locator('section.note-item a[href="%s"]' % href).first.click(timeout=8000)
+                page.wait_for_timeout(2200)
                 detail = page.evaluate(DETAIL) or {}
             except Exception:
                 detail = {}
+            try:
+                page.go_back()
+                page.wait_for_timeout(1500)
+            except Exception:
+                page.goto(search_url, wait_until="domcontentloaded")
+                page.wait_for_timeout(2500)
 
+            url = "https://www.xiaohongshu.com" + href if href.startswith("/") else href
+            nums = detail.get("engage_numbers") or []
             rows.append({
                 "id": href.rstrip("/").split("/")[-1] or None,
                 "platform": "xiaohongshu",
                 "title": c.get("title") or None,
                 "text": c.get("cover_text") or None,
                 "author": c.get("author") or None,
-                "likes": parse_count(c.get("likes")),
+                "likes": parse_count(detail.get("likes")) or parse_count(c.get("likes")),
                 "collects": parse_count(detail.get("collects")),
-                "comments": parse_count(detail.get("comments")),
-                "published_at": detail.get("published_at"),
+                "comments": parse_count(nums[2]) if len(nums) > 2 else None,
+                "published_at": None,
                 "url": url,
                 "cover_text": c.get("cover_text") or None,
             })
