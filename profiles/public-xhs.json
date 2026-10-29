@@ -1,0 +1,121 @@
+{
+  "source": "public-xhs",
+  "platform": "xiaohongshu",
+  "keywords": {
+    "zh": [
+      "AI",
+      "AI工具",
+      "AI效率",
+      "AI工作流",
+      "AI副业"
+    ],
+    "en": []
+  },
+  "blacklist": {
+    "zh": [
+      "抽奖",
+      "空投",
+      "传销"
+    ],
+    "en": []
+  },
+  "engagement": {
+    "likes_min": 500
+  },
+  "metrics": {
+    "min_likes": 500,
+    "min_collect_ratio": 0.15
+  },
+  "jev_questions": {
+    "information_density": {
+      "type": "score",
+      "instructions": "How dense is the concrete information — specific numbers, steps, cases, comparisons, or reproducible details?",
+      "criteria": [
+        "Almost no concrete information; pure hype.",
+        "One vague claim.",
+        "One or two concrete details.",
+        "Several details, still shallow.",
+        "Solid summary with some specifics.",
+        "Features plus use cases.",
+        "Rich detail across several dimensions.",
+        "Very dense: numbers, steps, caveats.",
+        "Near-complete guide.",
+        "Exhaustive, with edge cases and data."
+      ]
+    },
+    "copyability": {
+      "type": "score",
+      "instructions": "Can a reader reproduce this without extra research — are the tool, steps, and conditions all given?",
+      "criteria": [
+        "No path to reproduce.",
+        "Names something but no method.",
+        "Hints at method, no steps.",
+        "Rough idea, needs searching.",
+        "Basic steps, still gaps.",
+        "Clear enough to try.",
+        "Concrete steps for first use.",
+        "Steps plus pitfalls.",
+        "Complete reproducible workflow.",
+        "Beginner-proof walkthrough."
+      ]
+    },
+    "structure_clarity": {
+      "type": "score",
+      "instructions": "Is the structure explicit — a clear hook, a body with numbered points or sections, and a closing takeaway?",
+      "criteria": [
+        "No structure; a single block of text.",
+        "Loose paragraphs, no clear opening.",
+        "Has an opening but no body structure.",
+        "Some listing, but inconsistent.",
+        "Recognizable intro and body.",
+        "Clear sections or numbered points.",
+        "Hook, numbered body, and closing.",
+        "Structure is easy to map onto a template.",
+        "Structure itself is the value; highly reusable.",
+        "Textbook-level structure, immediately copyable."
+      ]
+    },
+    "differentiation": {
+      "type": "score",
+      "instructions": "Compared with other posts in the same niche, is the format or angle rare rather than a repeat of common templates?",
+      "criteria": [
+        "Identical to the most common template.",
+        "Very common angle.",
+        "Slightly different wording only.",
+        "Some fresh angle on a familiar format.",
+        "Noticeably different from the mainstream.",
+        "Rare framing most creators do not use.",
+        "Distinct format with clear authorship.",
+        "Hard to find an equivalent post.",
+        "Unique angle that defines a new format.",
+        "Category-defining originality."
+      ]
+    }
+  },
+  "gate": {
+    "require": {
+      "information_density": {
+        "score": ">=7"
+      },
+      "copyability": {
+        "score": ">=7"
+      },
+      "structure_clarity": {
+        "score": ">=7"
+      },
+      "differentiation": {
+        "score": ">=7"
+      }
+    },
+    "forbid": {},
+    "max_score": {}
+  },
+  "ranking": {
+    "weights": {
+      "information_density": 0.25,
+      "copyability": 0.25,
+      "structure_clarity": 0.25,
+      "differentiation": 0.25
+    }
+  }
+}
