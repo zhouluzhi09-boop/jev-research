@@ -55,6 +55,17 @@ python engine/select_topics.py --config profiles/public-xhs.json --out-dir runs/
 # 第 4 步：按 templates/ 写 报告.md 与 噪声.md
 ```
 
+## 采集方式：脚本优先，agent 兜底
+
+| 方式 | 速度 | 说明 |
+|---|---|---|
+| `adapters/xhs_browser.py`（Playwright 脚本） | 30 条 / 约 1 分钟 | 默认路径 |
+| agent 直接驱动浏览器 | 20 条 / 约 10 分钟（仅卡片） | 只在脚本跑不起来时用 |
+
+实测：agent 采集有九成时间花在模型回合延迟上，真正的采集动作只要半分钟。进详情读收藏更慢，10 分钟大约只能覆盖 5-8 条。
+
+**结论**：采集交给脚本，模型只负责 intake、判断和写报告。agent 采集仅作应急兜底，不进入推荐路径。
+
 ## 产出契约
 
 ```
