@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+runs/
+*.jsonl
+pending_review.json
+shortlist_rejected.json
+shortlist_watch.json
+.venv/
+node_modules/
+.DS_Store
