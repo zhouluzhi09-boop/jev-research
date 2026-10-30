@@ -22,3 +22,4 @@ node_modules/
 *.msg.txt
 *msg.txt
 .v2msg.txt
+.v22b.txt

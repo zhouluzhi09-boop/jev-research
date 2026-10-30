@@ -1,1 +1,0 @@
-fix(v2.2): totals 暴露 excluded_lang；测试字段对齐
