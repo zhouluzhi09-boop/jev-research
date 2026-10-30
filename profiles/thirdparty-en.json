@@ -1,5 +1,5 @@
 {
-  "source": "thirdparty-en",
+  "source": "thirdparty-intl: 英语/西/德/法/阿 作为第三方",
   "platform": "x",
   "quota": {
     "zh": 0,
@@ -8,11 +8,12 @@
   "keywords": {
     "zh": [],
     "en": [
-      "China Turkey twitter war",
-      "Turkey China netizens",
-      "Uyghur China online",
-      "Turkic China dispute",
-      "China Turkey meme war"
+      "China Turkey",
+      "China Turquía",
+      "China Türkei",
+      "Chine Turquie",
+      "الصين تركيا",
+      "China Turkey meme"
     ]
   },
   "fields": {
@@ -26,7 +27,11 @@
     "top_n": 50,
     "clear_threshold": 0.65,
     "slight_threshold": 0.55,
-    "single_post_share": 0.4
+    "single_post_share": 0.4,
+    "exclude_langs": [
+      "zh",
+      "tr"
+    ]
   },
   "jev_questions": {
     "third_party_lean": {
@@ -167,7 +172,7 @@
     }
   },
   "notes": {
-    "scope": "只采英语推文（quota.zh = 0），回答外部第三方世界怎么看。",
+    "scope": "英/西/德/法/阿 均视为第三方，quota.zh=0；报告需按语种拆分布。",
     "no_merge": "本链路结论不得与中文/土文主张链路（claims）合并。",
     "thresholds": "有效样本 < 50 条只报分布；领先方 >= 65% 为 clear，55%-65% 为 slight，< 55% 为 none；Top1 占该立场互动 >= 40% 标记单条驱动。",
     "three_views": "count_share / weight_share / top_share 必须分开报。"
@@ -175,13 +180,13 @@
   "pools": {
     "hot": {
       "days": 7,
-      "min_faves": 20,
+      "min_faves": 3,
       "query_type": "Top",
       "weight": 0.6
     },
     "fresh": {
       "days": 3,
-      "min_faves": 5,
+      "min_faves": 0,
       "query_type": "Latest",
       "weight": 0.4
     }
@@ -190,5 +195,9 @@
     "likes_min": 0,
     "comments_min": 0,
     "mode": "or"
+  },
+  "blacklist": {
+    "zh": [],
+    "en": []
   }
 }

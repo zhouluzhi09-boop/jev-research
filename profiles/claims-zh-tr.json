@@ -199,5 +199,9 @@
     "likes_min": 0,
     "comments_min": 0,
     "mode": "or"
+  },
+  "blacklist": {
+    "zh": [],
+    "en": []
   }
 }

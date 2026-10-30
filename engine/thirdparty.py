@@ -24,6 +24,7 @@ CLEAR_THRESHOLD = 0.65      # 领先方 >= 65% -> clear
 SLIGHT_THRESHOLD = 0.55     # 55% <= 领先方 < 65% -> slight；< 55% -> none
 SINGLE_POST_SHARE = 0.40    # 领先方 Top1 帖子互动 / 该立场总互动 >= 40% -> 单条驱动
 TOP_N = 50                  # 头部口径默认取互动降序前 N 条
+EXCLUDE_LANGS = ("zh", "tr")  # 当事人语言，不计入第三方池
 
 LEANS = ("pro_cn", "pro_tr", "neutral", "both_negative")
 EXCLUDED_LEANS = ("irrelevant",)
@@ -36,7 +37,7 @@ DEFAULT_FIELDS = {
 }
 
 DISCLAIMER = (
-    "免责声明：本结论只代表该平台该时间窗内可见的英语样本，"
+    "免责声明：本结论只代表该平台该时间窗内可见的多语种第三方样本（已剔除中文/土耳其语），"
     "不代表第三方世界或全网民意，也不能与中文/土文链路结论合并。"
 )
 
@@ -112,6 +113,10 @@ def _settings(cfg):
         "single_post_share": float(
             settings.get("single_post_share", SINGLE_POST_SHARE)
         ),
+        "exclude_langs": [
+            str(x).lower()
+            for x in settings.get("exclude_langs", list(EXCLUDE_LANGS))
+        ],
     }
 
 
@@ -143,16 +148,21 @@ def _brief(record):
     }
 
 
-def _records(rows, fields, confidence_min):
+def _records(rows, fields, confidence_min, exclude_langs=()):
     """拆出有效样本、低置信度样本和各类排除计数。
 
     规则 1：只统计 lean 存在且 != irrelevant 的条目。
     规则 2：confidence < confidence_min 的条目进 low_confidence，不计入。
     """
     eligible, low = [], []
-    excluded = {"missing_lean": 0, "irrelevant": 0, "invalid_lean": 0}
+    excluded = {"missing_lean": 0, "irrelevant": 0, "invalid_lean": 0, "excluded_lang": 0}
+    excluded_set = {str(x).lower() for x in (exclude_langs or ())}
 
     for index, row in enumerate(rows):
+        lang = str(row.get("lang") or "").strip().lower()
+        if lang and lang in excluded_set:
+            excluded["excluded_lang"] += 1
+            continue
         lean = _as_choice(_answer(row, fields["lean"]))
         if not lean:
             excluded["missing_lean"] += 1
@@ -231,7 +241,7 @@ def aggregate(rows, cfg):
     fields = _fields(cfg)
 
     _eligible, effective, low, excluded = _records(
-        rows, fields, settings["confidence_min"]
+        rows, fields, settings["confidence_min"], settings["exclude_langs"]
     )
 
     counts = {lean: 0 for lean in LEANS}
@@ -316,6 +326,7 @@ def aggregate(rows, cfg):
             "missing_lean": excluded["missing_lean"],
             "irrelevant": excluded["irrelevant"],
             "invalid_lean": excluded["invalid_lean"],
+            "excluded_lang": excluded.get("excluded_lang", 0),
         },
         "counts": counts,
         "count_share": count_share,
@@ -349,7 +360,7 @@ def render_markdown(result):
     lines = [
         "> " + result["disclaimer"],
         "",
-        "# 第三方视角（英语推文）立场分析",
+        "# 第三方视角（多语种）立场分析",
         "",
         "## 结论",
         "",
