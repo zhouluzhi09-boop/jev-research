@@ -117,6 +117,15 @@
             "明确讨论经济。"
           ]
         }
+      },
+      "criteria": {
+        "history": "关于历史归属、历史事件、古代政权或历史叙事的争论。",
+        "genes": "关于基因、血统纯度、种族或人群起源的主张。",
+        "culture": "关于语言、习俗、宗教、文化保护或文化优劣的主张。",
+        "economy": "关于贸易、发展、就业、投资或经济实力的主张。",
+        "morality": "关于谁对谁错、谁先挑事、道义责任或双重标准的主张。",
+        "mockery": "以嘲讽、meme、绰号或段子为主要内容，没有实质论点。",
+        "other": "不属于以上类别，或无法归入单一类别的主张。"
       }
     },
     "claim_stance": {
@@ -159,6 +168,11 @@
             "完全不讨论事件。"
           ]
         }
+      },
+      "criteria": {
+        "pro_cn": "为中国立场辩护、认可中方做法，或把主要责任归于土耳其。",
+        "pro_tr": "为土耳其立场辩护、认可土方做法，或把主要责任归于中国。",
+        "neutral": "同时呈现双方论据、明确不站边，或只做事实梳理。"
       }
     }
   },
@@ -166,5 +180,24 @@
     "claim_text": "每条记录必须由外部 LLM 写入顶层 claim_text（一句话主张）；缺失的条目不参与聚合。",
     "repeat_rule": "同一 claim_text 至少出现 2 次才算观点，出现 1 次计入 one_off。",
     "no_merge": "本链路结论不得与英语第三方链路（thirdparty）合并。"
+  },
+  "pools": {
+    "hot": {
+      "days": 7,
+      "min_faves": 20,
+      "query_type": "Top",
+      "weight": 0.6
+    },
+    "fresh": {
+      "days": 3,
+      "min_faves": 5,
+      "query_type": "Latest",
+      "weight": 0.4
+    }
+  },
+  "engagement": {
+    "likes_min": 0,
+    "comments_min": 0,
+    "mode": "or"
   }
 }

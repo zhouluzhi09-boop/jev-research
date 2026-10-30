@@ -93,6 +93,13 @@
             "Discussing either side of the event."
           ]
         }
+      },
+      "criteria": {
+        "pro_cn": "为中国立场辩护、认可中方做法，或把主要责任归于土耳其。",
+        "pro_tr": "为土耳其立场辩护、认可土方做法，或把主要责任归于中国。",
+        "neutral": "同时呈现双方论据、明确不站边，或只做事实梳理。",
+        "both_negative": "同时批评中国和土耳其两边，认为双方都有问题；不要并入 neutral。",
+        "irrelevant": "与本次中土舆论热点无关，例如广告、其他话题、纯日常分享。"
       }
     },
     "tone": {
@@ -135,6 +142,11 @@
             "Mocking the other side directly."
           ]
         }
+      },
+      "criteria": {
+        "mocking": "以讽刺、嘲弄、meme 或开玩笑的方式谈论事件。",
+        "serious": "认真分析、评论或表达明确立场，没有明显玩梗。",
+        "spectator": "主要围观、吃瓜、转发进展，语气轻松但不刻意嘲讽。"
       }
     },
     "stance_confidence": {
@@ -159,5 +171,24 @@
     "no_merge": "本链路结论不得与中文/土文主张链路（claims）合并。",
     "thresholds": "有效样本 < 50 条只报分布；领先方 >= 65% 为 clear，55%-65% 为 slight，< 55% 为 none；Top1 占该立场互动 >= 40% 标记单条驱动。",
     "three_views": "count_share / weight_share / top_share 必须分开报。"
+  },
+  "pools": {
+    "hot": {
+      "days": 7,
+      "min_faves": 20,
+      "query_type": "Top",
+      "weight": 0.6
+    },
+    "fresh": {
+      "days": 3,
+      "min_faves": 5,
+      "query_type": "Latest",
+      "weight": 0.4
+    }
+  },
+  "engagement": {
+    "likes_min": 0,
+    "comments_min": 0,
+    "mode": "or"
   }
 }
