@@ -169,6 +169,17 @@
         "很高，多次明确表态。",
         "极高，原文直接声明立场。"
       ]
+    },
+    "mock_target": {
+      "type": "choice",
+      "instructions": "If this post is a joke or meme about this dispute, who is the butt of the joke? Choose spectator when it is clearly a joke but has no target (pure watching / popcorn). Choose none when it is not a joke at all.",
+      "criteria": {
+        "mocks_cn": "The joke targets China, Chinese netizens, or Chinese claims.",
+        "mocks_tr": "The joke targets Turkey, Turkish netizens, or Turkic claims.",
+        "mocks_both": "The joke targets both sides.",
+        "spectator": "It is a joke or meme but has no target: watching, popcorn, 'this timeline is wild'.",
+        "none": "It is not a joke; serious analysis, news, or unrelated content."
+      }
     }
   },
   "notes": {
