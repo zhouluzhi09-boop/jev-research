@@ -76,6 +76,45 @@ python engine/select_topics.py --config profiles/public-xhs.json --out-dir runs/
 
 `copyability`（可复制）和 `emotional_resonance`（情绪共鸣）是两把不同的尺子：一条内容可以既可复制又有共鸣，也可以只有其一。两个维度都打分、都参与加权排序，不要互相替代。默认只把前四维写进 `gate.require`；情绪共鸣不作硬门槛，否则会把「干货但冷」的内容全部挡掉。做娱乐向时，再按 profile 单独把它加成门槛。
 
+## v2 立场分析
+
+v1 只判内容质量（四维 + 数据门槛），不判立场。v2 在 `judged.jsonl` 上追加三个判定字段：
+
+| 字段 | 类型 | 取值 |
+|---|---|---|
+| `stance` | choice | `pro_cn` / `pro_tr` / `neutral` / `spectator` / `irrelevant` |
+| `stance_intensity` | score 0-9 | 立场表达强度 |
+| `stance_confidence` | score 0-9 | 判断把握 |
+
+运行：
+
+```bash
+python engine/stance.py --config profiles/stance-xhs.json --out-dir runs/<事件>/
+```
+
+### 三个口径，必须分开报
+
+| 口径 | 算法 | 回答什么 |
+|---|---|---|
+| 声量（`count_share`） | 各立场条数 / 有效条数 | 哪一方发帖多 |
+| 互动（`weight_share`） | 各立场 `likes + comments` 之和 / 总互动 | 哪一方被更多人看见 |
+| 头部（`top_share`） | 按互动降序取 Top N（默认 50）的立场分布 | 头部内容偏向哪一方 |
+
+三条规则：
+
+1. `stance` 缺失或等于 `irrelevant` 的条目不参与任何口径。
+2. `stance_confidence < confidence_min`（默认 5）的条目单独进 `low_confidence`，不计入主口径。
+3. 同一 `author` 出现超过 `author_cap`（默认 5）条时只计 1 条，折叠的账号与条数写入 `suspect_authors`。
+
+### 结论写法（硬约束）
+
+- 只能写「声量领先方 / 互动领先方 / 头部领先方」。
+- 三个口径不一致时，必须明确写「三个口径结论不一致」，分别列出三个领先方。
+- **不要写「谁赢了」**，也不要把三个口径合并成一个胜负判断。
+- 报告必须带一句：本结论只代表该平台该时间窗内可见样本，不代表全网民意。
+
+产出 `stance_report.json`（可逐项核对）与 `stance_report.md`（给人看）。报告里的每个数字都必须来自 `aggregate()` 的计算结果，不许手填或估算。
+
 ## 产出契约
 
 ```

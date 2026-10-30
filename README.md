@@ -28,6 +28,30 @@ python engine/select_topics.py --config profiles/public-xhs.json --out-dir runs/
 # 4. 写报告：按 templates/ 下的模板
 ```
 
+## v2 立场分析
+
+v1 只判内容质量，不判立场；v2 在同一份 `judged.jsonl` 上做舆论热点立场聚合，回答「哪一方占优」，但必须拆成三个口径分别报：
+
+| 口径 | 算法 |
+|---|---|
+| 条数占比 `count_share` | 各立场条数 / 有效条数 |
+| 互动加权占比 `weight_share` | 各立场 `likes + comments` 之和 / 总互动 |
+| 头部分布 `top_share` | 按互动降序取 Top N（默认 50）的立场分布 |
+
+口径细节：
+
+- `stance == irrelevant`、缺失 stance 的条目不参与统计。
+- `stance_confidence < confidence_min`（默认 5）单独进 `low_confidence`，不计入主口径。
+- 同一 `author` 出现超过 `author_cap`（默认 5）条时只计 1 条，并列入 `suspect_authors`。
+
+```bash
+python engine/stance.py --config profiles/stance-xhs.json --out-dir runs/<事件>/
+```
+
+产出 `stance_report.json` 与 `stance_report.md`。结论只写「声量领先方 / 互动领先方 / 头部领先方」，三个口径不一致时明确标注「三个口径结论不一致」；报告必须带一句：
+
+> 本结论只代表该平台该时间窗内可见样本，不代表全网民意。
+
 ## 判定契约
 
 内容四维全部 ≥7 才算有价值：

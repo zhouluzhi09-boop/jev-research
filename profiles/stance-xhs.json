@@ -1,0 +1,124 @@
+{
+  "source": "stance-xhs",
+  "platform": "xiaohongshu",
+  "fields": {
+    "stance": "stance",
+    "intensity": "stance_intensity",
+    "confidence": "stance_confidence"
+  },
+  "settings": {
+    "confidence_min": 5,
+    "author_cap": 5,
+    "top_n": 50
+  },
+  "metrics": {
+    "min_likes": 0,
+    "min_collect_ratio": 0
+  },
+  "jev_questions": {
+    "stance": {
+      "type": "choice",
+      "instructions": "这条内容在本次舆论热点中明确站在哪一方？只按文本明确表达判断；转述、反讽、只贴标签都要按实际语义归类。",
+      "options": {
+        "pro_cn": {
+          "label": "支持中国一方",
+          "description": "明确为中国立场辩护、支持中方做法，或把责任主要归于对方。",
+          "positive_examples": [
+            "中国这次的处理有道理，对方先挑事。",
+            "从中国的角度看，这个回应已经够克制了。"
+          ],
+          "negative_examples": [
+            "只复述双方说法，自己没有表态。",
+            "同时批评中国和对方，没有站边。"
+          ]
+        },
+        "pro_tr": {
+          "label": "支持土耳其一方",
+          "description": "明确为土耳其立场辩护、支持土方做法，或把责任主要归于中方。若具体事件不是中土议题，请在事件 profile 中改写此释义。",
+          "positive_examples": [
+            "土耳其这次的要求并不过分，问题不在他们。",
+            "土方有自己的安全考虑，不能全怪土耳其。"
+          ],
+          "negative_examples": [
+            "只贴新闻截图，没有评价。",
+            "说“两边都有问题”，但未偏向土耳其。"
+          ]
+        },
+        "neutral": {
+          "label": "中立",
+          "description": "同时呈现双方论据，明确表示不站边，或做事实梳理而不作价值判断。",
+          "positive_examples": [
+            "两边都有道理，关键看后续怎么谈。",
+            "先把时间线捋清楚，不急着下结论。"
+          ],
+          "negative_examples": [
+            "只支持一方并攻击另一方。",
+            "完全不讨论事件，只发无关广告。"
+          ]
+        },
+        "spectator": {
+          "label": "旁观",
+          "description": "内容与热点相关，但主要是围观、吃瓜、玩梗或情绪表达，没有对立场作出判断。",
+          "positive_examples": [
+            "搬个小板凳，看看后面怎么发展。",
+            "这瓜越来越大了，先收藏。"
+          ],
+          "negative_examples": [
+            "明确说支持中方。",
+            "认真分析双方论据并给出倾向。"
+          ]
+        },
+        "irrelevant": {
+          "label": "无关",
+          "description": "内容与本次舆论热点无关，例如广告、其他话题、纯日常分享。",
+          "positive_examples": [
+            "今天的穿搭分享。",
+            "求推荐一款好用的扫地机器人。"
+          ],
+          "negative_examples": [
+            "提到事件并表达围观态度。",
+            "讨论事件中的某一方。"
+          ]
+        }
+      }
+    },
+    "stance_intensity": {
+      "type": "score",
+      "instructions": "立场表达的强度有多高？0 表示完全看不出立场，9 表示极强、带有攻击性或动员性。只评强度，不评立场对错。",
+      "criteria": [
+        "完全没有立场信号。",
+        "极弱，几乎察觉不到倾向。",
+        "很弱，只有单个中性措辞暗示。",
+        "偏弱，有倾向但主要是转述。",
+        "中等偏弱，能看出倾向但未明确站边。",
+        "中等，明确表达倾向。",
+        "较强，明确支持一方并给出理由。",
+        "强，反复强调并使用强评价词。",
+        "很强，情绪化表达或带有动员意味。",
+        "极强，攻击对方或使用极端表述。"
+      ]
+    },
+    "stance_confidence": {
+      "type": "score",
+      "instructions": "判断这条内容立场时的把握有多大？0 表示完全无法判断，9 表示原文直接、清楚地声明了立场。把握不足 5 分的条目会被单独归入 low_confidence，不计入主口径。",
+      "criteria": [
+        "无法判断，文本缺失或只有图片。",
+        "极低，只能靠猜测。",
+        "很低，线索互相矛盾。",
+        "低，只有单一弱线索。",
+        "偏低，有线索但可能误读。",
+        "中等，足以判断基本立场。",
+        "较有把握，立场和对象都清楚。",
+        "高，明确表态且无歧义。",
+        "很高，多次明确表态。",
+        "极高，原文直接声明立场。"
+      ]
+    }
+  },
+  "notes": {
+    "three_views": "条数占比、互动加权占比、Top N 分布必须分开报；三者不一致时写「三个口径结论不一致」，不要写成谁赢了。",
+    "confidence": "confidence < confidence_min（默认 5）的条目单独归入 low_confidence，不计入主口径。",
+    "author_cap": "同一 author 出现超过 author_cap（默认 5）条时，该账号在主口径中只计 1 条，并列入 suspect_authors。",
+    "scope": "本结论只代表该平台该时间窗内可见样本，不代表全网民意。"
+  }
+}
