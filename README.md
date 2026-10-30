@@ -52,6 +52,28 @@ python engine/stance.py --config profiles/stance-xhs.json --out-dir runs/<事件
 
 > 本结论只代表该平台该时间窗内可见样本，不代表全网民意。
 
+## v2.1 双链路
+
+v2 把中/土/第三方混在一个 stance 引擎里，方法不对。v2.1 拆成两条互不合并的链路：
+
+- **A 链路（第三方）**：只采英语推文，回答「外部世界怎么看」。
+- **B 链路（双方主张）**：中文 / 土耳其语各自的高流量主张，回答「他们各自在说什么」。
+
+```bash
+# A 链路：只采英语（profiles/thirdparty-en.json 中 quota.zh = 0）
+python engine/thirdparty.py --config profiles/thirdparty-en.json --out-dir runs/<事件>/
+
+# B 链路：中文 + 土耳其语（土耳其语放 en 桶）
+python engine/claims.py --config profiles/claims-zh-tr.json --out-dir runs/<事件>/
+```
+
+产出 `thirdparty_report.json/.md` 与 `claims_report.json/.md`。两条链路的结论**不许合并**：
+
+- 有效样本 < 50 条时，A 链路只报分布，`lean_band = unknown`。
+- 领先方 ≥65% 为 `clear`，55%-65% 为 `slight`，<55% 为 `none`（无明显倾向）。
+- 领先方 Top1 帖子互动占该立场总互动 ≥40% 时标记 `single_post_driven`。
+- B 链路中同一 `claim_text` 至少出现 2 次才算「观点」，否则计入 `one_off`。
+
 ## 判定契约
 
 内容四维全部 ≥7 才算有价值：

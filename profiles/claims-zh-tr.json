@@ -1,0 +1,170 @@
+{
+  "source": "claims-zh-tr",
+  "platform": "x",
+  "quota": {
+    "zh": 150,
+    "en": 150
+  },
+  "keywords": {
+    "zh": [
+      "中土骂战",
+      "长城 突厥",
+      "新疆 突厥",
+      "泛突厥"
+    ],
+    "en": [
+      "Cin Turkiye",
+      "Uyghur Turkic",
+      "Turk Cin",
+      "Buyuk Duvar"
+    ]
+  },
+  "keywords_note": "采集层只有 zh / en 两个桶；土耳其语关键词放在 en 桶里。",
+  "fields": {
+    "type": "claim_type",
+    "stance": "claim_stance"
+  },
+  "settings": {
+    "min_repeat": 2,
+    "top_n": 10
+  },
+  "jev_questions": {
+    "claim_type": {
+      "type": "choice",
+      "instructions": "这条内容的核心主张属于哪一类？按 claim_text 的论点归类，不要按情绪或语气归类。",
+      "options": {
+        "history": {
+          "label": "历史",
+          "description": "关于历史归属、历史事件、古代政权或历史叙事的争论。",
+          "positive_examples": [
+            "长城本来就是防御北方游牧的工事。",
+            "突厥汗国的历史被现代民族主义改写。"
+          ],
+          "negative_examples": [
+            "两国网民互相嘲笑口音。",
+            "讨论某国经济增速。"
+          ]
+        },
+        "genes": {
+          "label": "基因 / 血统",
+          "description": "关于基因、血统纯度、种族或人群起源的主张。",
+          "positive_examples": [
+            "突厥人的基因更接近中亚人群。",
+            "这种血统论没有科学依据。"
+          ],
+          "negative_examples": [
+            "讨论古代长城的位置。",
+            "讽刺对方的网络用语。"
+          ]
+        },
+        "culture": {
+          "label": "文化",
+          "description": "关于语言、习俗、宗教、文化保护或文化优劣的主张。",
+          "positive_examples": [
+            "新疆各民族文化得到了保护。",
+            "突厥语国家应该共享文化产品。"
+          ],
+          "negative_examples": [
+            "比较两国 GDP。",
+            "讨论历史疆域。"
+          ]
+        },
+        "economy": {
+          "label": "经济",
+          "description": "关于贸易、发展、就业、投资或经济实力的主张。",
+          "positive_examples": [
+            "中国投资带动了当地就业。",
+            "土耳其经济离不开中国市场。"
+          ],
+          "negative_examples": [
+            "争论古代民族起源。",
+            "互相发 meme。"
+          ]
+        },
+        "morality": {
+          "label": "道德 / 责任",
+          "description": "关于谁对谁错、谁先挑事、道义责任或双重标准的主张。",
+          "positive_examples": [
+            "土耳其方面先挑起了网络攻击。",
+            "双方都在纵容民族主义。"
+          ],
+          "negative_examples": [
+            "介绍长城的历史。",
+            "比较两国文化产品。"
+          ]
+        },
+        "mockery": {
+          "label": "嘲讽 / 玩梗",
+          "description": "以嘲讽、meme、绰号或段子为主要内容，没有实质论点。",
+          "positive_examples": [
+            "又开始互相叫外号了。",
+            "这波是 meme 大战。"
+          ],
+          "negative_examples": [
+            "认真论证历史归属。",
+            "引用经济数据。"
+          ]
+        },
+        "other": {
+          "label": "其他",
+          "description": "不属于以上类别，或无法归入单一类别的主张。",
+          "positive_examples": [
+            "希望两国普通人别被带节奏。",
+            "这条内容主要是转发新闻。"
+          ],
+          "negative_examples": [
+            "明确讨论历史。",
+            "明确讨论经济。"
+          ]
+        }
+      }
+    },
+    "claim_stance": {
+      "type": "choice",
+      "instructions": "这条主张站在哪一方？只判断 claim_text 的立场，不判断语气。",
+      "options": {
+        "pro_cn": {
+          "label": "支持中国一方",
+          "description": "为中国立场辩护、认可中方做法，或把主要责任归于土耳其。",
+          "positive_examples": [
+            "中国对新疆文化的保护是实实在在的。",
+            "土耳其方面先挑起了这轮网络冲突。"
+          ],
+          "negative_examples": [
+            "只复述双方说法，没有表态。",
+            "同时批评双方。"
+          ]
+        },
+        "pro_tr": {
+          "label": "支持土耳其一方",
+          "description": "为土耳其立场辩护、认可土方做法，或把主要责任归于中国。",
+          "positive_examples": [
+            "突厥国家有权共享自己的文化叙事。",
+            "中国网民的反应过度了。"
+          ],
+          "negative_examples": [
+            "只贴新闻截图，没有评价。",
+            "说两边都有问题。"
+          ]
+        },
+        "neutral": {
+          "label": "中立",
+          "description": "同时呈现双方论据、明确不站边，或只做事实梳理。",
+          "positive_examples": [
+            "两边都有民族主义，别急着站队。",
+            "先把时间线捋清楚。"
+          ],
+          "negative_examples": [
+            "只支持一方并攻击另一方。",
+            "完全不讨论事件。"
+          ]
+        }
+      }
+    }
+  },
+  "notes": {
+    "claim_text": "每条记录必须由外部 LLM 写入顶层 claim_text（一句话主张）；缺失的条目不参与聚合。",
+    "repeat_rule": "同一 claim_text 至少出现 2 次才算观点，出现 1 次计入 one_off。",
+    "no_merge": "本链路结论不得与英语第三方链路（thirdparty）合并。"
+  }
+}

@@ -115,6 +115,43 @@ python engine/stance.py --config profiles/stance-xhs.json --out-dir runs/<事件
 
 产出 `stance_report.json`（可逐项核对）与 `stance_report.md`（给人看）。报告里的每个数字都必须来自 `aggregate()` 的计算结果，不许手填或估算。
 
+## v2.1 双链路（A 第三方 / B 双方主张）
+
+v2 把中立、土耳其、第三方混在一个 stance 引擎里算，方法错了。v2.1 拆成两条独立链路，**结论不许合并**。
+
+### A 链路：英语第三方视角
+
+```bash
+python engine/thirdparty.py --config profiles/thirdparty-en.json --out-dir runs/<事件>/
+```
+
+- 只采英语推文（profile 中 `quota: {"zh": 0, "en": 200}`），回答「外部世界怎么看」。
+- 判定字段：`third_party_lean`（`pro_cn` / `pro_tr` / `neutral` / `both_negative` / `irrelevant`）、`tone`（`mocking` / `serious` / `spectator`）、`stance_confidence`（0-9）。
+- `both_negative` 单独成类，不得并入 `neutral`；`irrelevant` 与缺失 lean 不参与统计。
+- 三个口径分开报：`count_share`、`weight_share`（likes + comments）、`top_share`（互动降序 Top 50）。
+- 阈值：有效样本 **< 50 条**只报分布（`lean_band = unknown`，conclusion 固定为「样本不足，仅报分布」）；领先方 **≥65%** 为 `clear`，**55%-65%** 为 `slight`，**<55%** 为 `none`（写「无明显倾向」）。
+- 单条驱动：领先方 Top1 帖子互动 ≥ 该立场总互动 **40%** 时置 `single_post_driven = true`，报告里点名该帖。
+- 产出 `thirdparty_report.json` / `.md`；报告开头必须带免责声明。
+
+### B 链路：中文 / 土耳其语双方主张
+
+```bash
+python engine/claims.py --config profiles/claims-zh-tr.json --out-dir runs/<事件>/
+```
+
+- 分语种采集：中文关键词放 `zh` 桶，土耳其语关键词放 `en` 桶（采集层只有这两个桶）。
+- Jev 只做 `claim_type`（`history` / `genes` / `culture` / `economy` / `morality` / `mockery` / `other`）与 `claim_stance`（`pro_cn` / `pro_tr` / `neutral`）分类；一句话主张 `claim_text` 由外部 LLM 写入顶层字段。
+- 缺 `claim_text` 或 `claim_type` 的条目不参与聚合，计入 `missing_claim_text`。
+- 按 `(claim_stance, claim_type)` 分组；组内同一 `claim_text` **至少出现 2 次**才算「观点」，否则计入 `one_off`。
+- 每组输出观点文本、帖子数、总互动、Top1 帖子 id/url；按 `pro_cn` / `pro_tr` 分两节，各节内按总互动降序取 Top 10。
+- 产出 `claims_report.json` / `.md`。
+
+### 三条硬约束
+
+1. A 链路只采英文，B 链路分语种；不要把第三方样本混进双方主张。
+2. 两条链路的结论不许合并、不许互相引用。
+3. 五个阈值（50 条 / 55% / 65% / 40% / ≥2 条）只写在代码常量与 profile 的 `settings` 里，不在逻辑中散落硬编码。
+
 ## 产出契约
 
 ```

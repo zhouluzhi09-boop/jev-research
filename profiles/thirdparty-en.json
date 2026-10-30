@@ -1,0 +1,163 @@
+{
+  "source": "thirdparty-en",
+  "platform": "x",
+  "quota": {
+    "zh": 0,
+    "en": 200
+  },
+  "keywords": {
+    "zh": [],
+    "en": [
+      "China Turkey twitter war",
+      "Turkey China netizens",
+      "Uyghur China online",
+      "Turkic China dispute",
+      "China Turkey meme war"
+    ]
+  },
+  "fields": {
+    "lean": "third_party_lean",
+    "tone": "tone",
+    "confidence": "stance_confidence"
+  },
+  "settings": {
+    "confidence_min": 5,
+    "sample_min": 50,
+    "top_n": 50,
+    "clear_threshold": 0.65,
+    "slight_threshold": 0.55,
+    "single_post_share": 0.4
+  },
+  "jev_questions": {
+    "third_party_lean": {
+      "type": "choice",
+      "instructions": "作为英语舆论中的第三方观察者，这条推文更倾向哪一方？只看文本明确表达的立场；转述、反讽、玩梗按实际语义归类。",
+      "options": {
+        "pro_cn": {
+          "label": "倾向中国",
+          "description": "为中国立场辩护、认可中方做法，或把主要责任归于土耳其。",
+          "positive_examples": [
+            "China handled this with more restraint than Turkey.",
+            "The Turkish side started this online campaign."
+          ],
+          "negative_examples": [
+            "Just quoting both governments without taking a side.",
+            "Criticizing both sides equally."
+          ]
+        },
+        "pro_tr": {
+          "label": "倾向土耳其",
+          "description": "为土耳其立场辩护、认可土方做法，或把主要责任归于中国。",
+          "positive_examples": [
+            "Turkey has a legitimate point here.",
+            "The Chinese netizens are the aggressors in this exchange."
+          ],
+          "negative_examples": [
+            "Only posting a screenshot with no comment.",
+            "Saying both sides are wrong without leaning."
+          ]
+        },
+        "neutral": {
+          "label": "中立",
+          "description": "同时呈现双方论据、明确不站边，或只做事实梳理。",
+          "positive_examples": [
+            "Both sides have a case; wait for the facts.",
+            "Here is a timeline of what happened, no judgment."
+          ],
+          "negative_examples": [
+            "Attacking one side while defending the other.",
+            "Completely unrelated content."
+          ]
+        },
+        "both_negative": {
+          "label": "双方皆负面",
+          "description": "同时批评中国和土耳其两边，认为双方都有问题；不要并入 neutral。",
+          "positive_examples": [
+            "Nationalists on both sides are embarrassing.",
+            "Both governments are using this for domestic politics."
+          ],
+          "negative_examples": [
+            "Only criticizing one side.",
+            "Describing the timeline without evaluating either side."
+          ]
+        },
+        "irrelevant": {
+          "label": "无关",
+          "description": "与本次中土舆论热点无关，例如广告、其他话题、纯日常分享。",
+          "positive_examples": [
+            "Here is my breakfast today.",
+            "Looking for a good laptop recommendation."
+          ],
+          "negative_examples": [
+            "Mentioning the dispute and commenting on it.",
+            "Discussing either side of the event."
+          ]
+        }
+      }
+    },
+    "tone": {
+      "type": "choice",
+      "instructions": "这条推文的语气是什么？只评语气，不评立场。",
+      "options": {
+        "mocking": {
+          "label": "嘲讽 / 玩梗",
+          "description": "以讽刺、嘲弄、meme 或开玩笑的方式谈论事件。",
+          "positive_examples": [
+            "This whole thing is a circus.",
+            "Cue the nationalist memes."
+          ],
+          "negative_examples": [
+            "A sober analysis of the timeline.",
+            "Just watching and posting updates."
+          ]
+        },
+        "serious": {
+          "label": "严肃",
+          "description": "认真分析、评论或表达明确立场，没有明显玩梗。",
+          "positive_examples": [
+            "The historical context matters here.",
+            "This policy has real consequences."
+          ],
+          "negative_examples": [
+            "Laughing at both sides.",
+            "Just here for the drama."
+          ]
+        },
+        "spectator": {
+          "label": "旁观",
+          "description": "主要围观、吃瓜、转发进展，语气轻松但不刻意嘲讽。",
+          "positive_examples": [
+            "Grabbing popcorn for this thread.",
+            "Watching how this unfolds."
+          ],
+          "negative_examples": [
+            "A detailed argument for one side.",
+            "Mocking the other side directly."
+          ]
+        }
+      }
+    },
+    "stance_confidence": {
+      "type": "score",
+      "instructions": "判断这条推文第三方倾向时的把握有多大？0 表示完全无法判断，9 表示原文直接、清楚地表态。把握不足 5 分的条目单独归入 low_confidence，不计入主口径。",
+      "criteria": [
+        "无法判断，文本缺失或只有图片。",
+        "极低，只能靠猜测。",
+        "很低，线索互相矛盾。",
+        "低，只有单一弱线索。",
+        "偏低，有线索但可能误读。",
+        "中等，足以判断基本倾向。",
+        "较有把握，倾向和对象都清楚。",
+        "高，明确表态且无歧义。",
+        "很高，多次明确表态。",
+        "极高，原文直接声明立场。"
+      ]
+    }
+  },
+  "notes": {
+    "scope": "只采英语推文（quota.zh = 0），回答外部第三方世界怎么看。",
+    "no_merge": "本链路结论不得与中文/土文主张链路（claims）合并。",
+    "thresholds": "有效样本 < 50 条只报分布；领先方 >= 65% 为 clear，55%-65% 为 slight，< 55% 为 none；Top1 占该立场互动 >= 40% 标记单条驱动。",
+    "three_views": "count_share / weight_share / top_share 必须分开报。"
+  }
+}
